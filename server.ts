@@ -12,15 +12,27 @@ app.get('/ping', (req: Request, res: Response) => {
 
 app.get('/products', async (req: Request, res: Response) => {
   const products = await prisma.product.findMany({
-    include: {
-      reviews: true
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      price: true,
+      reviews: {
+        select: {
+          id: true,
+          text: true,
+          rating: true
+        }
+      }
     }
   });
+
   res.json(products);
 });
 
 app.post('/products', async (req: Request, res: Response) => {
   const { body } = req;
+
   const product = await prisma.product.create({
     data: {
       name: body.name,
@@ -28,12 +40,14 @@ app.post('/products', async (req: Request, res: Response) => {
       price: body.price
     }
   });
+
   res.json(product);
 });
 
 app.post('/reviews', async (req: Request, res: Response) => {
   const { body } = req;
-  const review = await prisma.product.create({
+
+  const review = await prisma.review.create({
     data: {
       text: body.text,
       rating: body.rating,
@@ -44,11 +58,11 @@ app.post('/reviews', async (req: Request, res: Response) => {
       }
     }
   });
+
   res.json(review);
 });
 
 const PORT = 3001;
 app.listen(PORT);
 console.log(`Listening on http://localhost:${PORT}`);
-
 //curl -X POST localhost:3001/reviews -H "Content-Type: application/json" -d '{"text": "torta", "rating": 11, "productId":"ckttum0130000799eexos1y1d" }'
